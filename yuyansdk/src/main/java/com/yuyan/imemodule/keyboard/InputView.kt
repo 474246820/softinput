@@ -5,7 +5,8 @@ import android.content.Context
 import android.graphics.Color
 import android.graphics.drawable.BitmapDrawable
 import android.os.Build
-import android.util.Log
+import android.os.Bundle
+import android.view.Gravity
 import android.view.KeyEvent
 import android.view.LayoutInflater
 import android.view.MotionEvent
@@ -60,10 +61,18 @@ import androidx.core.graphics.drawable.toDrawable
 import androidx.core.graphics.scale
 import androidx.core.view.isVisible
 import androidx.core.view.postDelayed
+import androidx.core.view.setPadding
+import androidx.recyclerview.widget.LinearLayoutManager
+import com.yuyan.imemodule.adapter.PinYinAdapter
+import com.yuyan.imemodule.database.entry.SideSymbol
 import com.yuyan.imemodule.entity.SkbFunItem
 import com.yuyan.imemodule.keyboard.container.InputViewParent
 import com.yuyan.imemodule.keyboard.container.SettingsContainer
+import com.yuyan.imemodule.libs.recyclerview.SwipeRecyclerView
+import com.yuyan.imemodule.utils.AppUtil
 import com.yuyan.inputmethod.util.EnPinYinUtils
+import splitties.dimensions.dp
+import splitties.views.dsl.core.margin
 
 /**
  * 输入法主界面。
@@ -95,6 +104,13 @@ class InputView(context: Context, service: ImeService) : LifecycleRelativeLayout
     var hasSelection = false   // 编辑键盘选择模式
     var hasSelectionAll = false   // 编辑键盘选择模式
 
+    private var mRvPinyin : SwipeRecyclerView? = null
+    private val mSideSymbolsPinyin:List<SideSymbol> by lazy { ArrayList() }
+    private val mLlAddSymbol : LinearLayout = LinearLayout(context).apply{
+        layoutParams = LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT,LinearLayout.LayoutParams.WRAP_CONTENT).apply { margin = (dp(20)) }
+        gravity = Gravity.CENTER
+    }
+
     init {
         initNavbarBackground(service)
         this.service = service
@@ -104,10 +120,26 @@ class InputView(context: Context, service: ImeService) : LifecycleRelativeLayout
         mHoderLayoutLeft = mSkbRoot.findViewById(R.id.ll_skb_holder_layout_left)
         mHoderLayoutRight = mSkbRoot.findViewById(R.id.ll_skb_holder_layout_right)
         mInputKeyboardContainer = mSkbRoot.findViewById(R.id.ll_input_keyboard_container)
+        mRvPinyin = mSkbRoot.findViewById(R.id.rv_pinyin)
         mAddPhrasesLayout = EditPhrasesView(context)
         mInputViewParent = mSkbRoot.findViewById(R.id.skb_input_keyboard_view)
         KeyboardManager.instance.setData(mInputViewParent, this)
         mLlKeyboardBottomHolder =  mSkbRoot.findViewById(R.id.iv_keyboard_holder)
+        mRvPinyin?.let {
+            val prefixLayoutManager = LinearLayoutManager(context, LinearLayoutManager.HORIZONTAL, false)
+            it.setLayoutManager(prefixLayoutManager)
+        }
+        val ivAddSymbol = ImageView(context).apply {
+            setPadding(dp(5))
+            setImageResource(R.drawable.ic_menu_setting)
+            drawable.setTint(ThemeManager.activeTheme.keyTextColor)
+        }
+        ivAddSymbol.setOnClickListener { _:View ->
+            val arguments = Bundle()
+            arguments.putInt("type", 0)
+            AppUtil.launchSettingsToPrefix(context!!, arguments)
+        }
+        mLlAddSymbol.addView(ivAddSymbol)
         val root = PopupComponent.get().root
         val viewParent = root.parent
         if (viewParent != null) {
@@ -190,6 +222,40 @@ class InputView(context: Context, service: ImeService) : LifecycleRelativeLayout
         DecodingInfo.candidatesLiveData.observe( this){ _ ->
             updateCandidateBar()
             (KeyboardManager.instance.currentContainer as? CandidatesContainer)?.showCandidatesView()
+        }
+    }
+
+    //更新符号显示,九宫格左侧符号栏
+    private fun updateSymbolListView() {
+        mRvPinyin?.let { rvPinyin ->
+            var prefixs = DecodingInfo.prefixs
+            val isPrefixs = prefixs.isNotEmpty()
+            if (!isPrefixs) { // 有候选拼音显示候选拼音
+                prefixs = mSideSymbolsPinyin.map { it.symbolKey }.toTypedArray()
+                if (rvPinyin.footerCount <= 0) {
+                    rvPinyin.addFooterView(mLlAddSymbol)
+                }
+            } else {
+                if (rvPinyin.footerCount > 0) {
+                    rvPinyin.removeFooterView(mLlAddSymbol)
+                }
+            }
+            rvPinyin.isVisible = prefixs.isNotEmpty()
+            val adapter = PinYinAdapter(context, prefixs)
+            rvPinyin.setAdapter(null)
+            rvPinyin.setOnItemClickListener{ _: View?, position: Int ->
+                if (!isPrefixs) {
+                    val symbol = mSideSymbolsPinyin.map { it.symbolValue }[position]
+                    val softKey = SoftKey(label = symbol)
+                    // 播放按键声音和震动
+                    DevicesUtils.tryPlayKeyDown()
+                    DevicesUtils.tryVibrate(this)
+                    responseKeyEvent(softKey)
+                } else {
+                    selectPrefix(position)
+                }
+            }
+            rvPinyin.setAdapter(adapter)
         }
     }
 
@@ -490,7 +556,30 @@ class InputView(context: Context, service: ImeService) : LifecycleRelativeLayout
             }
             return  true
         }
+//        else if (keyCode == KeyEvent.KEYCODE_DPAD_UP) {
+//            if(event.flags != KeyEvent.FLAG_SOFT_KEYBOARD && !DecodingInfo.isCandidatesListEmpty) {
+//
+//            }
+//        }
         return false
+    }
+
+    /**
+     * 通过按键选择拼音
+     */
+    private fun pressKeySelectPinyin(keyCode: Int) {
+        (mRvPinyin?.adapter as? PinYinAdapter)?.let { adapter ->
+            when(keyCode){
+                KeyEvent.KEYCODE_DPAD_LEFT -> {
+                    adapter.updateMinSelect()
+                    mRvPinyin!!.layoutManager?.scrollToPosition(adapter.select)
+                }
+                KeyEvent.KEYCODE_DPAD_RIGHT -> {
+                    adapter.updateAddSelect()
+                    mRvPinyin!!.layoutManager?.scrollToPosition(adapter.select)
+                }
+            }
+        }
     }
 
     /**
@@ -569,12 +658,14 @@ class InputView(context: Context, service: ImeService) : LifecycleRelativeLayout
                 commitDecInfoText(choice)
                 KeyboardManager.instance.switchKeyboard(InputModeSwitcherManager.skbLayout)
                 (KeyboardManager.instance.currentContainer as? T9TextContainer)?.updateSymbolListView()
+                updateSymbolListView()
                 if(mImeState != ImeState.STATE_PREDICT)resetToPredictState()
             } else {  // 不上屏，继续选择
                 if (!DecodingInfo.isFinish) {
                     if (InputModeSwitcherManager.isEnglish) setComposingText(DecodingInfo.composingStrForCommit)
                     updateCandidateBar()
                     (KeyboardManager.instance.currentContainer as? T9TextContainer)?.updateSymbolListView()
+                    updateSymbolListView()
                 } else {
                     if(mImeState != ImeState.STATE_IDLE) resetToIdleState()
                 }
@@ -590,6 +681,7 @@ class InputView(context: Context, service: ImeService) : LifecycleRelativeLayout
         if (!DecodingInfo.isFinish) {
             updateCandidateBar()
             (KeyboardManager.instance.currentContainer as? T9TextContainer)?.updateSymbolListView()
+            updateSymbolListView()
         } else {
             if(mImeState != ImeState.STATE_IDLE) resetToIdleState()
         }
@@ -704,6 +796,7 @@ class InputView(context: Context, service: ImeService) : LifecycleRelativeLayout
         DecodingInfo.reset()
         updateCandidateBar()
         (KeyboardManager.instance.currentContainer as? T9TextContainer)?.updateSymbolListView()
+        updateSymbolListView()
     }
 
     /**
@@ -723,6 +816,7 @@ class InputView(context: Context, service: ImeService) : LifecycleRelativeLayout
             } else {
                 KeyboardManager.instance.switchKeyboard()
                 (KeyboardManager.instance.currentContainer as? T9TextContainer)?.updateSymbolListView()
+                updateSymbolListView()
             }
         }
 

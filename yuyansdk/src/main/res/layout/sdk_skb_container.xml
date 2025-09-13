@@ -1,64 +1,62 @@
 <?xml version="1.0" encoding="utf-8"?>
-<RelativeLayout
-    xmlns:android="http://schemas.android.com/apk/res/android"
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:id="@+id/inputView"
     android:layout_width="wrap_content"
     android:layout_height="wrap_content"
-    android:layout_alignParentBottom="true"
-    android:layout_alignParentEnd="true">
+    android:layout_alignParentEnd="true"
+    android:layout_alignParentBottom="true">
+
     <include
         android:id="@+id/ll_skb_holder_layout_left"
         layout="@layout/sdk_skb_holder_layout"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_alignParentStart="true"
         android:layout_alignBottom="@+id/ll_input_keyboard_container"
-        android:visibility="gone"/>
+        android:layout_alignParentStart="true"
+        android:visibility="gone" />
+
     <RelativeLayout
         android:id="@+id/ll_input_keyboard_container"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:gravity="center_horizontal"
-        android:layout_toEndOf="@+id/ll_skb_holder_layout_left">
+        android:layout_toEndOf="@+id/ll_skb_holder_layout_left"
+        android:gravity="center_horizontal">
 
-        <TextView
-            android:id="@+id/tv_keyboard_type"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_alignParentStart="true"
-            android:layout_centerVertical="true"
-            android:textSize="14dp"
-            android:textColor="@color/black"
-            android:paddingStart="8dp"
-            android:paddingEnd="8dp"/>
+        <com.yuyan.imemodule.libs.recyclerview.SwipeRecyclerView
+            android:id="@+id/rv_pinyin"
+            android:visibility="gone"
+            android:layout_width="match_parent"
+            android:layout_height="55dp"/>
 
         <!--候选词视图，即 键盘顶部分的视图，分情况显示候选词，或者显示顶部操作栏-->
         <com.yuyan.imemodule.view.CandidatesBar
             android:id="@+id/candidates_bar"
-            android:layout_toEndOf="@id/tv_keyboard_type"
             android:layout_width="wrap_content"
-            android:layout_height="wrap_content"/>
+            android:layout_height="wrap_content"
+            android:layout_below="@id/rv_pinyin" />
+
         <!--除顶部外的下面其他容器视图，当标点符号视图显示时会遮挡住此视图-->
         <com.yuyan.imemodule.keyboard.container.InputViewParent
             android:id="@+id/skb_input_keyboard_view"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_below="@+id/candidates_bar">
-        </com.yuyan.imemodule.keyboard.container.InputViewParent>
+            android:layout_below="@+id/candidates_bar"/>
     </RelativeLayout>
+
     <include
         android:id="@+id/ll_skb_holder_layout_right"
         layout="@layout/sdk_skb_holder_layout"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_toEndOf="@+id/ll_input_keyboard_container"
         android:layout_alignBottom="@+id/ll_input_keyboard_container"
-        android:visibility="gone"/>
+        android:layout_toEndOf="@+id/ll_input_keyboard_container"
+        android:visibility="gone" />
+
     <LinearLayout
         android:id="@+id/iv_keyboard_holder"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:orientation="vertical"
         android:layout_below="@+id/ll_input_keyboard_container"
-        android:layout_centerHorizontal="true"/>
+        android:layout_centerHorizontal="true"
+        android:orientation="vertical" />
 </RelativeLayout>
