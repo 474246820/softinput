@@ -2,6 +2,7 @@ package com.yuyan.imemodule.view
 
 import android.content.Context
 import android.util.AttributeSet
+import android.util.TypedValue
 import android.view.Gravity
 import android.view.KeyEvent
 import android.view.View
@@ -33,8 +34,8 @@ import com.yuyan.imemodule.keyboard.KeyboardManager
 import com.yuyan.imemodule.keyboard.container.CandidatesContainer
 import com.yuyan.imemodule.keyboard.container.ClipBoardContainer
 import com.yuyan.imemodule.keyboard.container.InputBaseContainer
+import com.yuyan.imemodule.manager.InputModeSwitcherManager
 import com.yuyan.imemodule.manager.layout.CustomLinearLayoutManager
-import com.yuyan.imemodule.prefs.behavior.SkbStyleMode
 import splitties.dimensions.dp
 
 /**
@@ -50,6 +51,8 @@ class CandidatesBar(context: Context?, attrs: AttributeSet?) : RelativeLayout(co
     private lateinit var mComposingView: TextView // 组成字符串的View，用于显示输入的拼音。
     private lateinit var mRVCandidates: RecyclerView    //候选词列表
     private lateinit var mIvMenuSetting: ImageView
+    private lateinit var mTvSoftInputType: TextView //目前的模式
+    private lateinit var mIvShowSoftInput: ImageView //显示软键盘
     private lateinit var mLlContainer: LinearLayout
     private lateinit var mFlowerType: TextView
     private lateinit var mCandidatesAdapter: CandidatesBarAdapter
@@ -153,6 +156,18 @@ class CandidatesBar(context: Context?, attrs: AttributeSet?) : RelativeLayout(co
                 isEnabled = true
                 setOnClickListener { mCvListener.onClickMenu(SkbMenuMode.SettingsMenu) }
             }
+            mTvSoftInputType = TextView(context).apply {
+                setTextColor(ThemeManager.activeTheme.keyTextColor)
+                gravity = Gravity.CENTER_VERTICAL
+//                setTextColor(ContextCompat.getColor(context, R.color.black))
+                setTextSize(TypedValue.COMPLEX_UNIT_DIP, 18f)
+            }
+            mIvShowSoftInput = ImageView(context).apply {
+                setImageResource(R.drawable.ic_menu_keyboard)
+                isClickable = true
+                isEnabled = true
+                setOnClickListener { mCvListener.onClickShowSoftInput() }
+            }
             mLlContainer = LinearLayout(context).apply {
                 gravity = Gravity.CENTER_VERTICAL
             }
@@ -208,7 +223,9 @@ class CandidatesBar(context: Context?, attrs: AttributeSet?) : RelativeLayout(co
             mMenuRightArrowBtn.setOnClickListener { _: View ->
                 mCvListener.onClickMenu(SkbMenuMode.CloseSKB)
             }
-            mCandidatesMenuContainer.addView(mIvMenuSetting)
+//            mCandidatesMenuContainer.addView(mIvMenuSetting)
+            mCandidatesMenuContainer.addView(mTvSoftInputType)
+            mCandidatesMenuContainer.addView(mIvShowSoftInput)
             mCandidatesMenuContainer.addView(mLlContainer)
             mCandidatesMenuContainer.addView(mRVContainerMenu)
             mCandidatesMenuContainer.addView(mMenuRightArrowBtn)
@@ -217,13 +234,35 @@ class CandidatesBar(context: Context?, attrs: AttributeSet?) : RelativeLayout(co
                 LinearLayout.LayoutParams(LayoutParams.MATCH_PARENT, LayoutParams.MATCH_PARENT)
             )
         }
-        var menuHeight = (instance.heightForCandidatesArea * 0.8).toInt()
+        var menuHeight = (instance.heightForIcon ).toInt()
         mFlowerType.textSize = instance.candidateTextSize
         mIvMenuSetting.layoutParams = LinearLayout.LayoutParams(menuHeight, menuHeight, 0f).apply { marginStart = dp(10) }
+        mTvSoftInputType.layoutParams = LinearLayout.LayoutParams(LinearLayout.LayoutParams.WRAP_CONTENT, menuHeight, 0f).apply { marginStart = dp(10) }
+        mIvShowSoftInput.layoutParams = LinearLayout.LayoutParams(LinearLayout.LayoutParams.WRAP_CONTENT, menuHeight, 0f).apply {  gravity = Gravity.CENTER }
         mMenuRightArrowBtn.layoutParams = LinearLayout.LayoutParams(menuHeight, menuHeight, 0f).apply { marginEnd = dp(10) }
         mLlContainer.layoutParams = LinearLayout.LayoutParams(LinearLayout.LayoutParams.WRAP_CONTENT, menuHeight,0f)
         mRVContainerMenu.layoutParams = LinearLayout.LayoutParams(LinearLayout.LayoutParams.WRAP_CONTENT, menuHeight, 1f)
         mCandidatesMenuAdapter.notifyChanged()  // 点击下拉菜单后，需要刷新菜单栏
+    }
+
+    /**
+     * 更新键盘类型
+     */
+    fun updateInputType() {
+        KeyboardManager.instance.updateCurrentType { isCn,isEn,isNumber ->
+            val text = if (isCn) {
+                context.resources.getString(R.string.keyboard_type_cn)
+            } else if (isEn) {
+                if (InputModeSwitcherManager.isEnglishUpperCase || InputModeSwitcherManager.isEnglishUpperLockCase) {
+                    context.resources.getString(R.string.keyboard_type_en_uppercase)
+                } else {
+                    context.resources.getString(R.string.keyboard_type_en)
+                }
+            } else if (isNumber){
+                context.resources.getString(R.string.keyboard_type_number)
+            } else ""
+            mTvSoftInputType.text = text
+        }
     }
 
     private fun onClickMenu(skbMenuMode: SkbMenuMode, view: View?) {

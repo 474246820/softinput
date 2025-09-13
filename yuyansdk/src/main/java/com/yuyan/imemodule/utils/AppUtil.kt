@@ -52,21 +52,6 @@ object AppUtil {
     fun launchSettingsToPrefix(context: Context, arguments: Bundle? = null) =
         launchMainToDest(context, R.id.sidebarSymbolFragment, arguments)
 
-    fun launchMarketforYuyan(context: Context){
-        val packageName = Launcher.instance.context.packageName
-        try {
-            val uri = Uri.parse("market://details?id=$packageName")
-            val intent = Intent(Intent.ACTION_VIEW, uri)
-            intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
-            context.startActivity(intent)
-        } catch (e: Exception) {
-            // 如果设备没有安装应用市场，使用Google Play的网页版链接
-            val webMarketUrl = "https://play.google.com/store/apps/details?id=$packageName"
-            val webIntent = Intent(Intent.ACTION_VIEW, Uri.parse(webMarketUrl))
-            context.startActivity(webIntent)
-        }
-    }
-
     fun exit() {
         exitProcess(0)
     }
@@ -78,7 +63,7 @@ object AppUtil {
             ctx.notificationManager.createNotificationChannel(channel)
         }
         NotificationCompat.Builder(ctx, channelId)
-            .setSmallIcon(R.drawable.ic_sdk_launcher_transparent)
+            .setSmallIcon(R.drawable.ic_logo)
             .setContentTitle(ctx.getText(R.string.app_name))
             .setContentText(ctx.getText(R.string.restart_notify_msg))
             .setPriority(NotificationCompat.PRIORITY_HIGH)

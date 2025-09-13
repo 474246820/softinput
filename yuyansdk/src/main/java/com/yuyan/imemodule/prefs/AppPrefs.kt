@@ -114,7 +114,7 @@ class AppPrefs(private val sharedPreferences: SharedPreferences) {
         val candidateTextSize = int(
             R.string.candidate_size_input_setting,
             "candidate_size",
-            55,
+            88,
             25,
             100,
             "%",
@@ -215,7 +215,7 @@ class AppPrefs(private val sharedPreferences: SharedPreferences) {
     }
 
     inner class Clipboard : ManagedPreferenceCategory(R.string.clipboard, sharedPreferences) {
-        val clipboardListening = switch(R.string.clipboard_listening, "clipboard_enable", true)
+        val clipboardListening = switch(R.string.clipboard_listening, "clipboard_enable", false)
         val clipboardHistoryLimit = int(
             R.string.clipboard_limit,
             "clipboard_limit",
@@ -227,7 +227,7 @@ class AppPrefs(private val sharedPreferences: SharedPreferences) {
             defaultLabel = R.string.num_50
         ) { clipboardListening.getValue() }
         val clipboardSuggestion = switch(
-            R.string.clipboard_suggestion, "clipboard_suggestion", true
+            R.string.clipboard_suggestion, "clipboard_suggestion", false
         ) { clipboardListening.getValue() }
         val clipboardItemTimeout = int(
             R.string.clipboard_suggestion_timeout,

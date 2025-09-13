@@ -25,6 +25,7 @@ fun onSettingsMenuClick(inputView: InputView, skbMenuMode: SkbMenuMode) {
                 KeyboardManager.instance.switchKeyboard()
             } else {
                 KeyboardManager.instance.switchKeyboard(KeyboardManager.KeyboardType.SYMBOL)
+                inputView.updateSoftInputVisible(true)
                 inputView.mSkbCandidatesBarView.showEmoji()
                 (KeyboardManager.instance.currentContainer as? SymbolContainer)?.setEmojisView(symbolType)
             }

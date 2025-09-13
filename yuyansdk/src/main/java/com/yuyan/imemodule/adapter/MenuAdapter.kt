@@ -71,7 +71,8 @@ class MenuAdapter (context: Context?, val data: MutableList<SkbFunItem>) : Recyc
         val item = data[position]
         holder.entranceNameTextView?.text = item.funName
         holder.entranceIconImageView?.setImageResource(item.funImgRecource)
-        val color = if (isSettingsMenuSelect(item)) mTheme.accentKeyBackgroundColor else mTheme.keyTextColor
+//        val color = if (isSettingsMenuSelect(item)) mTheme.accentKeyBackgroundColor else mTheme.keyTextColor
+        val color = mTheme.keyTextColor
         holder.entranceNameTextView?.setTextColor(color)
         holder.entranceIconImageView?.getDrawable()?.setTint(color)
         if (dragOverListener != null) {

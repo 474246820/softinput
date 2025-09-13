@@ -4,6 +4,7 @@ import com.yuyan.imemodule.application.Launcher
 import com.yuyan.imemodule.data.theme.ThemeManager
 import com.yuyan.imemodule.prefs.AppPrefs
 import com.yuyan.imemodule.utils.DevicesUtils
+import splitties.dimensions.dp
 import kotlin.math.max
 import kotlin.math.min
 
@@ -29,6 +30,7 @@ class EnvironmentSingleton private constructor() {
     var holderWidth = 0 // 单手模式下键盘占位区域宽度
         private set
     var heightForCandidatesArea = 0 // 候选词区域的高度
+    var heightForIcon = Launcher.instance.context.dp(28) // 候选词区域icon的高度
     var heightForcomposing = 0 // 候选词区域的高度
     var heightForCandidates = 0 // 候选词区域的高度
     var heightForFullDisplayBar = 0 // 智能导航栏高度
@@ -77,17 +79,17 @@ class EnvironmentSingleton private constructor() {
         skbHeight = (screenHeightVertical * keyboardHeightRatio).toInt()
         heightForcomposing = (screenHeightVertical * candidatesHeightRatio *
                 AppPrefs.getInstance().keyboardSetting.candidateTextSize.getValue() / 100f).toInt()
-        heightForCandidates = (heightForcomposing * 1.8).toInt()
-        heightForCandidatesArea = (heightForcomposing * 2.8).toInt()
-        composingTextSize = DevicesUtils.px2sp (heightForcomposing)
+        heightForCandidates = (heightForcomposing * 1.8).toInt()//68
+        heightForCandidatesArea = (heightForcomposing * 2.8).toInt()//图标大小
+        composingTextSize = DevicesUtils.px2sp (48)//heightForcomposing 拼音
         candidateTextSize = DevicesUtils.px2sp (heightForCandidates)
-        heightForFullDisplayBar = (heightForCandidatesArea * 0.7f).toInt()
-        heightForKeyboardMove = (heightForCandidatesArea * 0.2f).toInt()
-        keyTextSize = (skbHeight * 0.06f).toInt()
-        keyTextSmallSize = (skbHeight * 0.04f).toInt()
-        keyXMargin = (ThemeManager.prefs.keyXMargin.getValue() / 1000f * skbWidth).toInt()
-        keyYMargin = (ThemeManager.prefs.keyYMargin.getValue() / 1000f * skbHeight).toInt()
-        inputAreaHeight = skbHeight + heightForCandidatesArea
+        heightForFullDisplayBar = (heightForCandidatesArea * 0.7f).toInt() //74
+        heightForKeyboardMove = (heightForCandidatesArea * 0.2f).toInt()//21
+        keyTextSize = (skbHeight * 0.06f).toInt()//22
+        keyTextSmallSize = (skbHeight * 0.04f).toInt() //14
+        keyXMargin = (ThemeManager.prefs.keyXMargin.getValue() / 1000f * skbWidth).toInt()//7
+        keyYMargin = (ThemeManager.prefs.keyYMargin.getValue() / 1000f * skbHeight).toInt()//7
+        inputAreaHeight = skbHeight + heightForCandidatesArea //480
     }
 
     var keyBoardHeightRatio: Float

@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <resources>
-    <string name="ime_yuyan_name">语燕输入法</string>
-    <string name="ime_yuyan_name_debug">语燕输入法</string>
+    <string name="ime_yuyan_name">YOYO输入法</string>
+    <string name="ime_yuyan_name_debug">YOYO输入法</string>
     <!--设置页面-->
     <string name="setting_ime_sdk">输入法设置</string>
     <string name="setting_ime_input">输入设置</string>
@@ -146,6 +146,7 @@
 
     <string name="keyboard_name_t9">中文9键</string>
     <string name="keyboard_name_cn26">拼音全键</string>
+    <string name="keyboard_name_en26">英文全键</string>
     <string name="keyboard_name_hand">手写输入</string>
     <string name="keyboard_name_stroke">笔画键盘</string>
     <string name="double_pinyin_schema_mode">双拼方案</string>
@@ -217,4 +218,9 @@
     <string name="keyboard_style_mod_yuyan">默认</string>
     <string name="keyboard_style_mod_google">谷歌</string>
     <string name="keyboard_style_mod_samsung">三星</string>
+
+    <string name="keyboard_type_cn">中文</string>
+    <string name="keyboard_type_en_uppercase">ABC</string>
+    <string name="keyboard_type_en">abc</string>
+    <string name="keyboard_type_number">123</string>
 </resources>

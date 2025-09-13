@@ -12,4 +12,6 @@ interface CandidateViewListener {
     fun onClickMenu(skbMenuMode: SkbMenuMode)  //选择设置菜单
     fun onClickClearCandidate()  //清空候选词
     fun onClickClearClipBoard() //清空剪切板
+
+    fun onClickShowSoftInput() //显示/隐藏软键盘面板
 }

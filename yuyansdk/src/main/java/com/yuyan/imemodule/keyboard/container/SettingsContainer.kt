@@ -146,45 +146,52 @@ class SettingsContainer(context: Context, inputView: InputView) : BaseContainer(
                 SkbMenuMode.Pinyin26Jian
             )
         )
-        if(!BuildConfig.offline) {
-            funItems.add(
-                SkbFunItem(
-                    mContext.getString(R.string.keyboard_name_hand),
-                    R.drawable.selece_input_mode_handwriting,
-                    SkbMenuMode.PinyinHandWriting
-                )
-            )
-        }
-        val doublePYSchemaMode = AppPrefs.getInstance().input.doublePYSchemaMode.getValue()
-        val doublePinyinSchemaName = when (doublePYSchemaMode) {
-            DoublePinyinSchemaMode.flypy -> R.string.double_pinyin_flypy_plus
-            DoublePinyinSchemaMode.natural -> R.string.double_pinyin_natural
-            DoublePinyinSchemaMode.abc -> R.string.double_pinyin_abc
-            DoublePinyinSchemaMode.mspy -> R.string.double_pinyin_mspy
-            DoublePinyinSchemaMode.sogou -> R.string.double_pinyin_sougou
-            DoublePinyinSchemaMode.ziguang -> R.string.double_pinyin_ziguang
-        }
         funItems.add(
             SkbFunItem(
-                mContext.getString(doublePinyinSchemaName),
-                R.drawable.selece_input_mode_dpy26,
-                SkbMenuMode.Pinyin26Double
+                mContext.getString(R.string.keyboard_name_en26),
+                R.drawable.selece_input_mode_py26,
+                SkbMenuMode.LockEnglish
             )
         )
-        funItems.add(
-            SkbFunItem(
-                mContext.getString(R.string.keyboard_name_pinyin_lx_17),
-                R.drawable.selece_input_mode_lx17,
-                SkbMenuMode.PinyinLx17
-            )
-        )
-        funItems.add(
-            SkbFunItem(
-                mContext.getString(R.string.keyboard_name_stroke),
-                R.drawable.selece_input_mode_stroke,
-                SkbMenuMode.PinyinStroke
-            )
-        )
+//        if(!BuildConfig.offline) {
+//            funItems.add(
+//                SkbFunItem(
+//                    mContext.getString(R.string.keyboard_name_hand),
+//                    R.drawable.selece_input_mode_handwriting,
+//                    SkbMenuMode.PinyinHandWriting
+//                )
+//            )
+//        }
+//        val doublePYSchemaMode = AppPrefs.getInstance().input.doublePYSchemaMode.getValue()
+//        val doublePinyinSchemaName = when (doublePYSchemaMode) {
+//            DoublePinyinSchemaMode.flypy -> R.string.double_pinyin_flypy_plus
+//            DoublePinyinSchemaMode.natural -> R.string.double_pinyin_natural
+//            DoublePinyinSchemaMode.abc -> R.string.double_pinyin_abc
+//            DoublePinyinSchemaMode.mspy -> R.string.double_pinyin_mspy
+//            DoublePinyinSchemaMode.sogou -> R.string.double_pinyin_sougou
+//            DoublePinyinSchemaMode.ziguang -> R.string.double_pinyin_ziguang
+//        }
+//        funItems.add(
+//            SkbFunItem(
+//                mContext.getString(doublePinyinSchemaName),
+//                R.drawable.selece_input_mode_dpy26,
+//                SkbMenuMode.Pinyin26Double
+//            )
+//        )
+//        funItems.add(
+//            SkbFunItem(
+//                mContext.getString(R.string.keyboard_name_pinyin_lx_17),
+//                R.drawable.selece_input_mode_lx17,
+//                SkbMenuMode.PinyinLx17
+//            )
+//        )
+//        funItems.add(
+//            SkbFunItem(
+//                mContext.getString(R.string.keyboard_name_stroke),
+//                R.drawable.selece_input_mode_stroke,
+//                SkbMenuMode.PinyinStroke
+//            )
+//        )
         val adapter = MenuAdapter(context, funItems)
         adapter.setOnItemClickLitener { _: RecyclerView.Adapter<*>?, _: View?, position: Int ->
             onKeyboardMenuClick(funItems[position])
@@ -192,12 +199,26 @@ class SettingsContainer(context: Context, inputView: InputView) : BaseContainer(
         mRVMenuLayout!!.setAdapter(adapter)
     }
 
-    private fun onKeyboardMenuClick(data: SkbFunItem) {
+    fun onKeyboardMenuClick(data: SkbFunItem) {
         val keyboardValue: Int
         val value = when (data.skbMenuMode) {
             SkbMenuMode.Pinyin26Jian -> {
                 keyboardValue = 0x1000
                 CustomConstant.SCHEMA_ZH_QWERTY
+            }
+            SkbMenuMode.LockEnglish  -> {
+                val newInputMode = InputModeSwitcherManager.MASK_SKB_LAYOUT_QWERTY_ABC or
+                        InputModeSwitcherManager.MASK_LANGUAGE_EN or
+                        InputModeSwitcherManager.MASK_CASE_LOWER
+
+                AppPrefs.getInstance().internal.inputMethodPinyinMode.setValue(
+                    InputModeSwitcherManager.MASK_SKB_LAYOUT_QWERTY_PINYIN or InputModeSwitcherManager.MASK_LANGUAGE_CN
+                ) // 始终记住中文的模式
+                AppPrefs.getInstance().internal.pinyinModeRime.setValue(CustomConstant.SCHEMA_EN)
+
+                InputModeSwitcherManager.saveInputMode(newInputMode)
+                KeyboardManager.instance.switchKeyboard()
+                return
             }
             SkbMenuMode.PinyinHandWriting -> {
                 keyboardValue = 0x3000

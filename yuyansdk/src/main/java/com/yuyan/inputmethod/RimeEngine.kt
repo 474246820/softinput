@@ -46,9 +46,15 @@ object RimeEngine {
 
     fun onNormalKey(event: KeyEvent) {
         val keyCode = event.keyCode
-        val keyChar = if(keyCode == KeyEvent.KEYCODE_APOSTROPHE) if(isFinish()) '/'.code else '\''.code
-            else event.unicodeChar
-        if (keyRecordStack.pushKey(keyCode))Rime.processKey(keyChar, event.action)
+        val keyChar = if(keyCode == KeyEvent.KEYCODE_APOSTROPHE) {
+            if(isFinish()) '/'.code else '\''.code
+        } else {
+            event.unicodeChar
+        }
+
+        if (keyRecordStack.pushKey(keyCode)) {
+            Rime.processKey(keyChar, event.action)
+        }
         updateCandidatesOrCommitText()
     }
 

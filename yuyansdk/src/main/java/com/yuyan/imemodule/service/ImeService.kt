@@ -4,6 +4,7 @@ import android.content.res.Configuration
 import android.inputmethodservice.InputMethodService
 import android.os.SystemClock
 import android.text.InputType
+import android.util.Log
 import android.view.KeyCharacterMap
 import android.view.KeyEvent
 import android.view.View
@@ -15,7 +16,6 @@ import com.yuyan.imemodule.data.theme.ThemeManager.OnThemeChangeListener
 import com.yuyan.imemodule.data.theme.ThemeManager.addOnChangedListener
 import com.yuyan.imemodule.data.theme.ThemeManager.onSystemDarkModeChange
 import com.yuyan.imemodule.data.theme.ThemeManager.removeOnChangedListener
-import com.yuyan.imemodule.manager.InputModeSwitcherManager
 import com.yuyan.imemodule.prefs.AppPrefs.Companion.getInstance
 import com.yuyan.imemodule.prefs.behavior.SkbMenuMode
 import com.yuyan.imemodule.singleton.EnvironmentSingleton
@@ -23,7 +23,6 @@ import com.yuyan.imemodule.utils.KeyboardLoaderUtil
 import com.yuyan.imemodule.keyboard.InputView
 import com.yuyan.imemodule.keyboard.KeyboardManager
 import com.yuyan.imemodule.keyboard.container.ClipBoardContainer
-import com.yuyan.imemodule.utils.LogUtil
 import com.yuyan.imemodule.utils.StringUtils
 import com.yuyan.imemodule.utils.isDarkMode
 import com.yuyan.imemodule.view.preference.ManagedPreference
@@ -69,6 +68,7 @@ class ImeService : InputMethodService() {
     override fun onStartInputView(editorInfo: EditorInfo, restarting: Boolean) {
         YuyanEmojiCompat.setEditorInfo(editorInfo)
         if (::mInputView.isInitialized)mInputView.onStartInputView(editorInfo, restarting)
+        hideSoftInputView()
     }
 
     override fun onDestroy() {
@@ -89,20 +89,28 @@ class ImeService : InputMethodService() {
             KeyboardLoaderUtil.instance.clearKeyboardMap()
             KeyboardManager.instance.clearKeyboard()
             if (::mInputView.isInitialized) KeyboardManager.instance.switchKeyboard()
+            hideSoftInputView()
         }
         onSystemDarkModeChange(newConfig.isDarkMode())
     }
 
     override fun onKeyDown(keyCode: Int, event: KeyEvent): Boolean {
         //  0 != event.getRepeatCount()   单次点击onKeyDown操作不处理，在onKeyUp时处理；长按时才处理onKeyDown操作。
-        return if (0 != event.repeatCount) super.onKeyDown(keyCode, event)
-        else if (isInputViewShown) true
+        return if (isInputViewShown) true
         else super.onKeyDown(keyCode, event)
     }
 
     override fun onKeyUp(keyCode: Int, event: KeyEvent): Boolean {
-        return if (isInputViewShown) mInputView.processKey(event) || super.onKeyUp(keyCode, event)
-        else super.onKeyUp(keyCode, event)
+        Log.e("RimeDebug", "Source: ${event.source}, Keycode: $keyCode, mask :${event.action and KeyEvent.META_SHIFT_ON != 0}")
+        return if (isInputViewShown) {
+            val handled = mInputView.processKey(event)
+            if (handled) {
+                hideSoftInputView()
+                handled
+            } else {
+                super.onKeyUp(keyCode, event)
+            }
+        } else super.onKeyUp(keyCode, event)
     }
 
     override fun setInputView(view: View) {
@@ -112,6 +120,14 @@ class ImeService : InputMethodService() {
             layoutParams.height = ViewGroup.LayoutParams.MATCH_PARENT
             view.setLayoutParams(layoutParams)
         }
+    }
+
+    /**
+     * 隐藏软键盘
+     */
+    private fun hideSoftInputView() {
+        if (!::mInputView.isInitialized) return
+        mInputView.updateSoftInputVisible(false)
     }
 
     override fun onEvaluateFullscreenMode(): Boolean = false //修复横屏之后输入框遮挡问题

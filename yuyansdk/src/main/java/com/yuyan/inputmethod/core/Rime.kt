@@ -74,9 +74,9 @@ class Rime(fullCheck: Boolean) {
         @JvmStatic
         fun processKey(keycode: Int, mask: Int): Boolean {
             if (keycode <= 0 || keycode == 0xffffff) return false
-            return processRimeKey(keycode, mask).also {
-                updateContext()
-            }
+            val result = processRimeKey(keycode, mask)
+            updateContext()
+            return result
         }
 
         @JvmStatic
@@ -87,7 +87,8 @@ class Rime(fullCheck: Boolean) {
         }
 
         @JvmStatic
-        fun clearComposition() { clearRimeComposition()
+        fun clearComposition() {
+            clearRimeComposition()
             updateContext()
         }
 

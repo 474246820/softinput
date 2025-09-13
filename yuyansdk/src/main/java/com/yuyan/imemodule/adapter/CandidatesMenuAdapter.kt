@@ -61,8 +61,8 @@ class CandidatesMenuAdapter(context: Context?) : RecyclerView.Adapter<Candidates
         val item = items[position]
         holder.entranceIconImageView?.padding = mMenuPadding
         val layoutParams = holder.entranceIconImageView?.layoutParams
-        layoutParams?.width = itemHeight
-        layoutParams?.height = itemHeight
+        layoutParams?.width = instance.heightForIcon//itemHeight
+        layoutParams?.height = instance.heightForIcon//itemHeight
         holder.entranceIconImageView?.setImageResource(item.funImgRecource)
         val color = if (isSettingsMenuSelect(item)) activeTheme.accentKeyBackgroundColor else activeTheme.keyTextColor
         holder.entranceIconImageView?.getDrawable()?.setTint(color)

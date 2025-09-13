@@ -6,7 +6,7 @@ plugins {
 android {
     compileSdk 35
     defaultConfig {
-        applicationId "com.yuyan.pinyin"
+        applicationId "com.yuyan.pinyin1"
         minSdk 23
         targetSdk 35
         versionCode Integer.valueOf(versionCodeDate())
@@ -58,9 +58,9 @@ android {
             applicationIdSuffix  ".offline"
         }
     }
-
     buildTypes {
         release {
+
             // 混淆
             minifyEnabled true
             shrinkResources true

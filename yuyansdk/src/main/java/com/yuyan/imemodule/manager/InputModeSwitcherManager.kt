@@ -157,7 +157,7 @@ object InputModeSwitcherManager {
      * Used to indicate the current language. An input mode should be anded with
      * [.MASK_LANGUAGE] to get this information. 指明英文语言。
      */
-    private const val MASK_LANGUAGE_EN = 0x0020
+    const val MASK_LANGUAGE_EN = 0x0020
 
     /**
      * 第5位指明软键盘当前的状态，比如高（大写），低（小写）。
@@ -167,7 +167,7 @@ object InputModeSwitcherManager {
     /**
      * 指明软键盘状态为低（小写）。
      */
-    private const val MASK_CASE_LOWER = 0x0000
+     const val MASK_CASE_LOWER = 0x0000
 
     /**
      * 指明软键盘状态为高（大写）。

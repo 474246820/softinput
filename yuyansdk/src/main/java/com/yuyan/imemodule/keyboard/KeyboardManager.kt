@@ -40,15 +40,7 @@ class KeyboardManager {
     }
 
     fun switchKeyboard(layout: Int = InputModeSwitcherManager.skbLayout) {
-        val keyboardName = when (layout) {
-            0x1000 -> KeyboardType.QWERTY
-            0x4000 -> KeyboardType.QWERTYABC
-            0x3000 -> KeyboardType.HANDWRITING
-            0x5000 -> KeyboardType.NUMBER
-            0x6000 -> KeyboardType.LX17
-            0x8000 -> KeyboardType.TEXTEDIT
-            else -> KeyboardType.T9
-        }
+        val keyboardName = getKeyboardType (layout)
         switchKeyboard(keyboardName)
         if (::mInputView.isInitialized)mInputView.updateCandidateBar()
     }
@@ -76,6 +68,37 @@ class KeyboardManager {
         mKeyboardRootView.showView(container)
         mCurrentKeyboardName = keyboardName
         currentContainer = container
+        if (::mInputView.isInitialized)mInputView.updateInputType()
+    }
+
+    fun updateCurrentType(layout: Int = InputModeSwitcherManager.skbLayout,l:(Boolean, Boolean, Boolean)-> Unit) {
+        val keyboardName = getKeyboardType (layout)
+        val isCn = keyboardName == KeyboardType.LX17
+                || keyboardName == KeyboardType.QWERTY
+                || keyboardName == KeyboardType.TEXTEDIT
+                || keyboardName == KeyboardType.T9
+        val isEn = keyboardName == KeyboardType.QWERTYABC
+        val isNumber = keyboardName == KeyboardType.NUMBER
+        l.invoke(isCn,isEn,isNumber)
+    }
+
+    /**
+     * 当前键盘是否是中文全拼
+     */
+    fun isCurrentSoftInputPinyin(): Boolean {
+        return getKeyboardType (InputModeSwitcherManager.skbLayout) == KeyboardType.QWERTY
+    }
+
+    private fun getKeyboardType(layout:Int):KeyboardType{
+        return when (layout) {
+            0x1000 -> KeyboardType.QWERTY
+            0x4000 -> KeyboardType.QWERTYABC
+            0x3000 -> KeyboardType.HANDWRITING
+            0x5000 -> KeyboardType.NUMBER
+            0x6000 -> KeyboardType.LX17
+            0x8000 -> KeyboardType.TEXTEDIT
+            else -> KeyboardType.T9
+        }
     }
 
     val isInputKeyboard: Boolean

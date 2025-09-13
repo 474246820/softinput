@@ -46,44 +46,44 @@ class ImeSettingsFragment : PreferenceFragmentCompat() {
             }
             addCategory(R.string.keyboard) {
                 isIconSpaceReserved = false
-                addDestinationPreference(
-                    R.string.theme,
-                    R.drawable.ic_menu_theme,
-                    R.id.action_settingsFragment_to_themeSettingsFragment
-                )
-                addDestinationPreference(
-                    R.string.keyboard_feedback,
-                    R.drawable.ic_menu_touch,
-                    R.id.action_settingsFragment_to_keyboardFeedbackFragment
-                )
+//                addDestinationPreference(
+//                    R.string.theme,
+//                    R.drawable.ic_menu_theme,
+//                    R.id.action_settingsFragment_to_themeSettingsFragment
+//                )
+//                addDestinationPreference(
+//                    R.string.keyboard_feedback,
+//                    R.drawable.ic_menu_touch,
+//                    R.id.action_settingsFragment_to_keyboardFeedbackFragment
+//                )
                 addDestinationPreference(
                     R.string.setting_ime_keyboard,
                     R.drawable.ic_menu_keyboard,
                     R.id.action_settingsFragment_to_keyboardSettingFragment
                 )
-                addDestinationPreference(
-                    R.string.clipboard,
-                    R.drawable.ic_menu_clipboard,
-                    R.id.action_settingsFragment_to_clipboardSettingsFragment
-                )
-
-                addDestinationPreference(
-                    R.string.full_display_keyboard,
-                    R.drawable.ic_menu_keyboard_full,
-                    R.id.action_settingsFragment_to_fullDisplayKeyboardFragment
-                )
+//                addDestinationPreference(
+//                    R.string.clipboard,
+//                    R.drawable.ic_menu_clipboard,
+//                    R.id.action_settingsFragment_to_clipboardSettingsFragment
+//                )
+//
+//                addDestinationPreference(
+//                    R.string.full_display_keyboard,
+//                    R.drawable.ic_menu_keyboard_full,
+//                    R.id.action_settingsFragment_to_fullDisplayKeyboardFragment
+//                )
             }
             addCategory(R.string.advanced) {
                 isIconSpaceReserved = false
-                addDestinationPreference(
-                    R.string.setting_ime_other,
-                    R.drawable.ic_menu_more_horiz,
-                    R.id.action_settingsFragment_to_otherSettingsFragment
-                )
-                addPreference(R.string.feedback,"",
-                    R.drawable.ic_menu_edit,) {
-                    startActivity(Intent(Intent.ACTION_VIEW, CustomConstant.FEEDBACK_TXC_REPO.toUri()))
-                }
+//                addDestinationPreference(
+//                    R.string.setting_ime_other,
+//                    R.drawable.ic_menu_more_horiz,
+//                    R.id.action_settingsFragment_to_otherSettingsFragment
+//                )
+//                addPreference(R.string.feedback,"",
+//                    R.drawable.ic_menu_edit,) {
+//                    startActivity(Intent(Intent.ACTION_VIEW, CustomConstant.FEEDBACK_TXC_REPO.toUri()))
+//                }
                 addDestinationPreference(
                     R.string.about,
                     R.drawable.ic_menu_feedback,
