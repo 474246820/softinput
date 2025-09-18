@@ -49,6 +49,15 @@ class PinYinAdapter(context: Context?, private val mDatas: Array<String>) :
         }
     }
 
+    fun updateRestSelect() {
+        select = -1
+        notifyChanged()
+    }
+
+    fun isCurrentKeySelectPinyin(): Boolean{
+        return select >= 0 && mDatas.isNotEmpty()
+    }
+
     @SuppressLint("NotifyDataSetChanged")
     fun notifyChanged() {
         notifyDataSetChanged()

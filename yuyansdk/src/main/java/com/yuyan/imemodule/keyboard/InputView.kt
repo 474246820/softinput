@@ -106,6 +106,7 @@ class InputView(context: Context, service: ImeService) : LifecycleRelativeLayout
 
     private var mRvPinyin : SwipeRecyclerView? = null
     private val mSideSymbolsPinyin:List<SideSymbol> by lazy { ArrayList() }
+    private var mPinYinAdapter:PinYinAdapter? = null
     private val mLlAddSymbol : LinearLayout = LinearLayout(context).apply{
         layoutParams = LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT,LinearLayout.LayoutParams.WRAP_CONTENT).apply { margin = (dp(20)) }
         gravity = Gravity.CENTER
@@ -241,7 +242,7 @@ class InputView(context: Context, service: ImeService) : LifecycleRelativeLayout
                 }
             }
             rvPinyin.isVisible = prefixs.isNotEmpty()
-            val adapter = PinYinAdapter(context, prefixs)
+            mPinYinAdapter = PinYinAdapter(context, prefixs)
             rvPinyin.setAdapter(null)
             rvPinyin.setOnItemClickListener{ _: View?, position: Int ->
                 if (!isPrefixs) {
@@ -255,7 +256,7 @@ class InputView(context: Context, service: ImeService) : LifecycleRelativeLayout
                     selectPrefix(position)
                 }
             }
-            rvPinyin.setAdapter(adapter)
+            rvPinyin.setAdapter(mPinYinAdapter)
         }
     }
 
@@ -507,7 +508,7 @@ class InputView(context: Context, service: ImeService) : LifecycleRelativeLayout
                 requestHideSelf()
                 return true
             }
-        } else if (keyCode == KeyEvent.KEYCODE_VIDEO_APP_2) { //Fn KEYCODE_FUNCTION
+        } else if (keyCode == KeyEvent.KEYCODE_FUNCTION) { //Fn KEYCODE_VIDEO_APP_2
             if (InputModeSwitcherManager.isNumberSkb) {
                 InputModeSwitcherManager.switchModeForUserKey(InputModeSwitcherManager.USER_DEF_KEYCODE_LANG_2)
             } else if (InputModeSwitcherManager.isChinese) {
@@ -535,7 +536,9 @@ class InputView(context: Context, service: ImeService) : LifecycleRelativeLayout
             if(mImeState != ImeState.STATE_IDLE) resetToIdleState()
             return true
         }  else if (keyCode == KeyEvent.KEYCODE_ENTER) {
-            if (DecodingInfo.isFinish || DecodingInfo.isAssociate) {
+            if (isCurrentKeySelectPinyin()) {
+                selectPrefix(mPinYinAdapter?.select ?: 0)
+            } else if (DecodingInfo.isFinish || DecodingInfo.isAssociate) {
                 sendKeyEvent(keyCode)
             } else {
                 if (!DecodingInfo.isCandidatesListEmpty && !DecodingInfo.isAssociate) {
@@ -547,7 +550,9 @@ class InputView(context: Context, service: ImeService) : LifecycleRelativeLayout
             if(mImeState != ImeState.STATE_IDLE) resetToIdleState()
             return true
         } else if (keyCode == KeyEvent.KEYCODE_DPAD_LEFT || keyCode == KeyEvent.KEYCODE_DPAD_RIGHT) {
-            if(event.flags != KeyEvent.FLAG_SOFT_KEYBOARD && !DecodingInfo.isCandidatesListEmpty) {
+            if (isCurrentKeySelectPinyin()) {
+                pressKeySelectPinyin(keyCode)
+            } else if(event.flags != KeyEvent.FLAG_SOFT_KEYBOARD && !DecodingInfo.isCandidatesListEmpty) {
                 mSkbCandidatesBarView.updateActiveCandidateNo(keyCode)
             } else if (DecodingInfo.isFinish || DecodingInfo.isAssociate) {
                 sendKeyEvent(keyCode)
@@ -555,12 +560,19 @@ class InputView(context: Context, service: ImeService) : LifecycleRelativeLayout
                 chooseAndUpdate()
             }
             return  true
+        } else if (keyCode == KeyEvent.KEYCODE_DPAD_UP) {
+            if (mSkbCandidatesBarView.isActiveCand() || !isCurrentKeySelectPinyin()) {
+                mSkbCandidatesBarView.resetSelect()
+                pressKeySelectPinyin(KeyEvent.KEYCODE_DPAD_RIGHT)
+                return  true
+            }
+        } else if (keyCode == KeyEvent.KEYCODE_DPAD_DOWN) {
+            if (!mSkbCandidatesBarView.isActiveCand() || isCurrentKeySelectPinyin()) {
+                mSkbCandidatesBarView.resetSelect()
+                resetKeySelectPinyin()
+                return true
+            }
         }
-//        else if (keyCode == KeyEvent.KEYCODE_DPAD_UP) {
-//            if(event.flags != KeyEvent.FLAG_SOFT_KEYBOARD && !DecodingInfo.isCandidatesListEmpty) {
-//
-//            }
-//        }
         return false
     }
 
@@ -568,7 +580,7 @@ class InputView(context: Context, service: ImeService) : LifecycleRelativeLayout
      * 通过按键选择拼音
      */
     private fun pressKeySelectPinyin(keyCode: Int) {
-        (mRvPinyin?.adapter as? PinYinAdapter)?.let { adapter ->
+        mPinYinAdapter?.let { adapter ->
             when(keyCode){
                 KeyEvent.KEYCODE_DPAD_LEFT -> {
                     adapter.updateMinSelect()
@@ -580,6 +592,23 @@ class InputView(context: Context, service: ImeService) : LifecycleRelativeLayout
                 }
             }
         }
+    }
+
+    /**
+     * 恢复选择拼音
+     */
+    private fun resetKeySelectPinyin() {
+        mPinYinAdapter?.updateRestSelect()
+    }
+
+    /**
+     * 判断当前是否选择拼音
+     */
+    private fun isCurrentKeySelectPinyin(): Boolean {
+        mPinYinAdapter?.let { adapter ->
+            return adapter.isCurrentKeySelectPinyin()
+        }
+        return false
     }
 
     /**

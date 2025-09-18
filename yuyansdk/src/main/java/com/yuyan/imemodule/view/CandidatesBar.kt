@@ -354,19 +354,10 @@ class CandidatesBar(context: Context?, attrs: AttributeSet?) : RelativeLayout(co
     }
 
     /**
-     * 更新选项
+     * 重置选项
      */
-    fun updateUnSelect() {
-        activeCandNo = -1
-        mCandidatesAdapter.activeCandidates(activeCandNo)
-        mCandidatesAdapter.notifyChanged()
-    }
-
-    /**
-     * 更新选项
-     */
-    fun updateSelect() {
-        activeCandNo = 0
+    fun resetSelect() {
+        activeCandNo = 1
         mCandidatesAdapter.activeCandidates(activeCandNo)
         mCandidatesAdapter.notifyChanged()
     }
