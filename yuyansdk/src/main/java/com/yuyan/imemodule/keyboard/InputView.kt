@@ -226,7 +226,9 @@ class InputView(context: Context, service: ImeService) : LifecycleRelativeLayout
         }
     }
 
-    //更新符号显示,九宫格左侧符号栏
+    /**
+     * 更新符号显示,九宫格左侧符号栏
+     */
     private fun updateSymbolListView() {
         mRvPinyin?.let { rvPinyin ->
             var prefixs = DecodingInfo.prefixs
@@ -349,7 +351,7 @@ class InputView(context: Context, service: ImeService) : LifecycleRelativeLayout
         if (sKey.isKeyCodeKey) {  // 系统的keycode,单独处理
             mImeState = ImeState.STATE_INPUT
             val keyEvent = KeyEvent(0, 0, KeyEvent.ACTION_UP, keyCode, 0, 0, 0, 0, KeyEvent.FLAG_SOFT_KEYBOARD)
-            processKey(keyEvent)
+            processKey(keyEvent, true)
         } else if (sKey.isUserDefKey || sKey.isUniStrKey) { // 是用户定义的keycode
             if (!DecodingInfo.isAssociate && !DecodingInfo.isCandidatesListEmpty) {
                 if(InputModeSwitcherManager.isChinese)   chooseAndUpdate()
@@ -457,14 +459,14 @@ class InputView(context: Context, service: ImeService) : LifecycleRelativeLayout
     /**
      * 按键处理函数
      */
-    fun processKey(event: KeyEvent): Boolean {
+    fun processKey(event: KeyEvent, isSoftKey: Boolean): Boolean {
         // 功能键处理
         if (processFunctionKeys(event)) return true
         val englishCellDisable = InputModeSwitcherManager.isEnglish && !getInstance().input.abcSearchEnglishCell.getValue()
         val result = if(englishCellDisable){
             processEnglishKey(event)
         } else if (InputModeSwitcherManager.isEnglish || InputModeSwitcherManager.isChinese) { // 中文、英语输入模式
-            processInput(event)
+            processInput(event, isSoftKey)
         } else { // 数字、符号处理
             processEnglishKey(event)
         }
@@ -504,10 +506,11 @@ class InputView(context: Context, service: ImeService) : LifecycleRelativeLayout
     private fun processFunctionKeys(event: KeyEvent): Boolean {
         val keyCode = event.keyCode
         if (keyCode == KeyEvent.KEYCODE_BACK) {
-            if (service.isInputViewShown) {
-                requestHideSelf()
-                return true
-            }
+            return true
+//            if (service.isInputViewShown) {
+//                requestHideSelf()
+//                return true
+//            }
         } else if (keyCode == KeyEvent.KEYCODE_FUNCTION) { //Fn KEYCODE_VIDEO_APP_2
             if (InputModeSwitcherManager.isNumberSkb) {
                 InputModeSwitcherManager.switchModeForUserKey(InputModeSwitcherManager.USER_DEF_KEYCODE_LANG_2)
@@ -614,26 +617,26 @@ class InputView(context: Context, service: ImeService) : LifecycleRelativeLayout
     /**
      * 按键处理函数
      */
-    private fun processInput(event: KeyEvent): Boolean {
+    private fun processInput(event: KeyEvent, isSoftKey: Boolean): Boolean {
         val keyCode = event.keyCode
         val keyChar = event.unicodeChar
-        val lable = keyChar.toChar().toString()
+        val label = keyChar.toChar().toString()
         if (keyCode == KeyEvent.KEYCODE_DEL) {
             if (DecodingInfo.isFinish || DecodingInfo.isAssociate) {
                 sendKeyEvent(keyCode)
                 if(mImeState != ImeState.STATE_IDLE) resetToIdleState()
             } else {
                 DecodingInfo.deleteAction()
-                updateCandidate()
+                updateCandidate(isDelete = true)
             }
             return true
         } else if ((Character.isLetterOrDigit(keyChar) && keyCode != KeyEvent.KEYCODE_0)
             || keyCode == KeyEvent.KEYCODE_APOSTROPHE
             || keyCode == KeyEvent.KEYCODE_SEMICOLON
-            || keyCode == KeyEvent.KEYCODE_STAR
+            || keyCode == KeyEvent.KEYCODE_NUMPAD_SUBTRACT
             || keyCode == KeyEvent.KEYCODE_0
-            || keyCode == KeyEvent.KEYCODE_POUND ){
-            changeSoftInputType()
+            || keyCode == KeyEvent.KEYCODE_PERIOD){
+            changeSoftInputType(isSoftKey)
             DecodingInfo.inputAction(event)
             updateCandidate(keyCode)
             return true
@@ -644,12 +647,12 @@ class InputView(context: Context, service: ImeService) : LifecycleRelativeLayout
             sendKeyEvent(keyCode)
             if(mImeState != ImeState.STATE_IDLE) resetToIdleState()
             return true
-        } else if(lable.isNotEmpty()) {
+        } else if(label.isNotEmpty()) {
             if (!DecodingInfo.isCandidatesListEmpty && !DecodingInfo.isAssociate) {
                 chooseAndUpdate()
             }
-            if(SymbolPreset.containsKey(lable))commitPairSymbol(lable)
-            else commitText(lable)
+            if(SymbolPreset.containsKey(label))commitPairSymbol(label)
+            else commitText(label)
             return true
         }
         return false
@@ -705,19 +708,25 @@ class InputView(context: Context, service: ImeService) : LifecycleRelativeLayout
     /**
      * 刷新候选词，重新从词库进行获取。
      */
-    private fun updateCandidate(keyCode:Int = -1) {
+    private fun updateCandidate(keyCode:Int = -1, isDelete: Boolean = false) {
         DecodingInfo.updateDecodingCandidate()
-        if (!DecodingInfo.isFinish) {
+        if (!DecodingInfo.isFinish && keyCode != KeyEvent.KEYCODE_1) {
             updateCandidateBar()
             (KeyboardManager.instance.currentContainer as? T9TextContainer)?.updateSymbolListView()
             updateSymbolListView()
         } else {
-            if(mImeState != ImeState.STATE_IDLE) resetToIdleState()
+            if(mImeState != ImeState.STATE_IDLE) {
+                resetToIdleState()
+            }
+            if (isDelete) {
+                updateSymbolListView()
+            }
         }
         if (InputModeSwitcherManager.isEnglish
-            || keyCode == KeyEvent.KEYCODE_STAR
+            || keyCode == KeyEvent.KEYCODE_1
+            || keyCode == KeyEvent.KEYCODE_NUMPAD_SUBTRACT
             || keyCode == KeyEvent.KEYCODE_0
-            || keyCode == KeyEvent.KEYCODE_POUND) {
+            || keyCode == KeyEvent.KEYCODE_PERIOD) {
             updateCandidateEn(keyCode)
         }
     }
@@ -732,7 +741,8 @@ class InputView(context: Context, service: ImeService) : LifecycleRelativeLayout
     private var pendingChar: Char? = null
 
     private fun updateCandidateEn(keyCode:Int = -1) {
-        if (DecodingInfo.composingStrForCommit.isEmpty() && keyCode != -1) {
+        if ((DecodingInfo.composingStrForCommit.isEmpty() && keyCode != -1)
+            || keyCode == KeyEvent.KEYCODE_1) {
             val now = System.currentTimeMillis()
             val letters = EnPinYinUtils.getLettersForKeyCode(keyCode) ?: return
             if (keyCode == lastKeyCode && now - lastKeyTime < 1000) {
@@ -796,8 +806,8 @@ class InputView(context: Context, service: ImeService) : LifecycleRelativeLayout
     /**
      * 改变软键盘显示/隐藏
      */
-    fun changeSoftInputType() {
-        if (KeyboardManager.instance.isCurrentSoftInputPinyin()) {
+    fun changeSoftInputType(isSoftKey: Boolean) {
+        if (KeyboardManager.instance.isCurrentSoftInputPinyin() && !isSoftKey) {
             KeyboardManager.instance.switchKeyboard(KeyboardManager.KeyboardType.SETTINGS)
                 (KeyboardManager.instance.currentContainer as? SettingsContainer)?.let {
                 it.onKeyboardMenuClick(SkbFunItem(

@@ -103,7 +103,7 @@ class ImeService : InputMethodService() {
     override fun onKeyUp(keyCode: Int, event: KeyEvent): Boolean {
         Log.e("RimeDebug", "Source: ${event.source}, Keycode: $keyCode, mask :${event.action and KeyEvent.META_SHIFT_ON != 0}")
         return if (isInputViewShown) {
-            val handled = mInputView.processKey(event)
+            val handled = mInputView.processKey(event, false)
             if (handled) {
                 hideSoftInputView()
                 handled

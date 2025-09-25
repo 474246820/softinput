@@ -54,7 +54,9 @@ object DecodingInfo {
         isReset = false
         activeCandidate = 0
         activeCandidateBar = 0
-        Kernel.inputKeyCode(event)
+        if (event.keyCode != KeyEvent.KEYCODE_1) {
+            Kernel.inputKeyCode(event)
+        }
         isAssociate = false
     }
 

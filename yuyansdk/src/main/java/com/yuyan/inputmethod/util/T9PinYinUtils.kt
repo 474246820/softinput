@@ -35,10 +35,10 @@ object T9PinYinUtils {
 
     init {
         t9PinyinMap.append(2, "a,b,c" to 1)
-        t9PinyinMap.append(3, "e,d,f" to 1)
+        t9PinyinMap.append(3, "d,e,f" to 1)
         t9PinyinMap.append(4, "g,h,i" to 1)
         t9PinyinMap.append(5, "j,k,l" to 1)
-        t9PinyinMap.append(6, "o,m,n" to 1)
+        t9PinyinMap.append(6, "m,n,o" to 1)
         t9PinyinMap.append(7, "p,q,r,s" to 1)
         t9PinyinMap.append(8, "t,u,v" to 1)
         t9PinyinMap.append(9, "w,x,y,z" to 1)
